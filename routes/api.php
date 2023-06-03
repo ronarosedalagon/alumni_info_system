@@ -25,7 +25,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('/register',[UserController::class,'register']);
 
-
+Route::get('/users', [UserController::class, 'index']);
 Route::post('/login',[UserController::class,'login']);
 
 Route::post('/logout',[UserController::class,'logout']);
@@ -53,6 +53,8 @@ Route::get('/images', [AlumniController::class,'index']);
 
 //update user details
 Route::post('/updateUser', [UserController::class, 'updateUserDetails']);
+//update user details - admin
+Route::post('/adminUpdateUser', [UserController::class, 'adminUpdateUser']);
 // Route::post('/updateUser',[UserController::class,'updateUser'])
 // Route::put('/updateUser/{id}', [UserController::class,'updateUser']);
 

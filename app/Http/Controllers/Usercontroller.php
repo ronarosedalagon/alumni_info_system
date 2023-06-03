@@ -11,6 +11,25 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+
+    // public function index()
+    // {
+    //     $userData = User::select('id', 'value')->get();
+
+    //     return response()->json($userData);
+    // }
+
+    public function index()
+    {
+        $userCount = User::where('role', 'alumni')->count();
+        $userData = User::where('role', 'alumni')->select('id','name')->get();
+
+        return response()->json([
+            'count' => $userCount,
+            'data' => $userData,
+        ]);
+    }
+
     function register(Request $req)
     {
         $alumni = 'alumni';
@@ -67,6 +86,7 @@ class UserController extends Controller
                 'batch' => $user->batch, 
                 'journal' => $user->journal, 
                 'role' => $user->role,
+                'password' => $user->password,
                 'token' => $token])->withCookie($cookie);
                 
         }
@@ -79,11 +99,14 @@ class UserController extends Controller
     function logout(Request $req)
     {
         Auth::logout();
-        
 
-        return response()->json(['message' => 'Logged out successfully']);
+    // Clear the back button cache
+    $response = response()->json(['message' => 'Logged out successfully']);
+    $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    $response->headers->set('Pragma', 'no-cache');
+    $response->headers->set('Expires', 'Fri, 01 Jan 1990 00:00:00 GMT');
 
-        // return response()->json(['error' => 'Unauthorized'], 401);
+    return $response;   
     }
 
     public function show()
@@ -135,6 +158,7 @@ class UserController extends Controller
             $validatedData = $request->validate([
                 'id' => 'required',
                 'work' => 'required',
+                'location' => 'required',
                 'linkedIn' => 'required',
                 'bio' => 'required',
                 'batch' => 'required',
@@ -149,8 +173,41 @@ class UserController extends Controller
     
             // Update the user details
             $user->work = $validatedData['work'];
+            $user->location = $validatedData['location'];
             $user->linkedIn = $validatedData['linkedIn'];
             $user->bio = $validatedData['bio'];
+            $user->batch = $validatedData['batch'];
+            $user->journal = $validatedData['journal'];
+    
+            // Save the updated user details
+            $user->save();
+    
+            // Return a response indicating success
+            return response()->json(['message' => 'User details updated successfully']);
+          
+    }
+
+    // UPDATE USER DETAILS
+    public function adminUpdateUser(Request $request)
+    {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'id' => 'required',
+                'name' => 'required',
+                'work' => 'required',
+                'batch' => 'required',
+                'journal' => 'required',
+            ]);
+    
+            // Get the user ID from the request
+            $userId = $validatedData['id'];
+    
+            // Find the user by ID
+            $user = User::findOrFail($userId);
+    
+            // Update the user details
+            $user->name = $validatedData['name'];
+            $user->work = $validatedData['work'];
             $user->batch = $validatedData['batch'];
             $user->journal = $validatedData['journal'];
     
